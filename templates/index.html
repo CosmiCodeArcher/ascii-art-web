@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <form action="/ascii-art" method="POST">
+        <input name="text" type="text">
+        <select name="banner">
+            <option value="standard">standard</option>
+            <option value="shadow">shadow</option>
+            <option value="thinkertoy">thinkertoy</option>
+        </select>
+        <button type="submit">Generate</button>
+    </form>
+    {{if .Error}}
+    <p style="color:red">{{.Error}}</p>
+    {{end}}
+    <pre>{{.Result}}</pre>
+</body>
+
+</html>
