@@ -9,6 +9,7 @@ import (
 func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/ascii-art", asciiArtHandler)
+	http.HandleFunc("/export", exportHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {

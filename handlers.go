@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+	"strconv"
 	"net/http"
 	"html/template"
 	"ascii-art-web/banner"
@@ -36,7 +39,18 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
 	bannerName := r.FormValue("banner")
 
-	LoadedBanner, err := banner.LoadBanner("banners/" + bannerName + ".txt")
+	var bannerFilePath string
+	bannerName = strings.ToLower(bannerName)
+
+	switch bannerName {
+	case "standard", "shadow", "thinkertoy":
+		bannerFilePath = "banners/" + bannerName + ".txt"
+	default:
+		http.Error(w, "Invalid banner name", http.StatusBadRequest)
+		return
+	}
+
+	LoadedBanner, err := banner.LoadBanner(bannerFilePath)
 	if err != nil {
 		http.Error(w, "Banner Not Found", http.StatusNotFound)
 		return
@@ -50,4 +64,45 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 
 	RenderedOutput := render.RenderToString(LoadedBanner, ParsedInput)
 	tmpl.Execute(w, PageData{Result: RenderedOutput, Text: text, Banner: bannerName})
+}
+
+func exportHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	text := r.URL.Query().Get("text")
+	bannerName := r.URL.Query().Get("banner")
+
+	var bannerFilePath string
+	bannerName = strings.ToLower(bannerName)
+
+	switch bannerName {
+	case "standard", "shadow", "thinkertoy":
+		bannerFilePath = "banners/" + bannerName + ".txt"
+	default:
+		http.Error(w, "Invalid banner name", http.StatusBadRequest)
+		return
+	}
+
+	LoadedBanner, err := banner.LoadBanner(bannerFilePath)
+	if err != nil {
+		http.Error(w, "Banner Not Found", http.StatusNotFound)
+		return
+	}
+
+	ParsedInput, err := parser.ParseInput(text)
+	if err != nil {
+		http.Error(w, "Empty text", http.StatusBadRequest)
+		return
+	}
+
+	Output := render.RenderToString(LoadedBanner, ParsedInput)
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.Header().Set("Content-Length", strconv.Itoa(len(Output)))
+	w.Header().Set("Content-Disposition", "attachment; filename=ascii-art.txt")
+
+	fmt.Fprintln(w, Output)
 }
