@@ -9,6 +9,8 @@ import (
 )
 
 type PageData struct {
+	Text string
+	Banner string
 	Result string
 	Error string
 }
@@ -47,5 +49,5 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RenderedOutput := render.RenderToString(LoadedBanner, ParsedInput)
-	tmpl.Execute(w, PageData{Result: RenderedOutput})
+	tmpl.Execute(w, PageData{Result: RenderedOutput, Text: text, Banner: bannerName})
 }
