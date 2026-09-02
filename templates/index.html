@@ -15,6 +15,11 @@
     <p style="color:red">{{.Error}}</p>
     {{end}}
     <pre>{{.Result}}</pre>
+    {{if .Result}}
+    <form action="/export" method="POST">
+        <button type="submit">Download</button>
+    </form>
+    {{end}}
 </body>
 
 </html>
