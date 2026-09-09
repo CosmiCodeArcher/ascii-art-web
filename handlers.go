@@ -78,6 +78,11 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	var bannerFilePath string
 	bannerName = strings.ToLower(bannerName)
 
+	if bannerName == "" || text == "" {
+		http.Error(w, "Missing text or banner parameter", http.StatusBadRequest)
+		return
+	}
+
 	switch bannerName {
 	case "standard", "shadow", "thinkertoy":
 		bannerFilePath = "banners/" + bannerName + ".txt"
