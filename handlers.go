@@ -20,8 +20,8 @@ type PageData struct {
 }
 
 var (
-	ErrInvalidBanner = errors.New("Invalid banner name")
-	ErrBannerLoad = errors.New("Could not load banner")
+	ErrInvalidBanner = errors.New("invalid banner name")
+	ErrBannerLoad = errors.New("could not load banner")
 	ErrEmptyText = errors.New("empty text")
 )
 
@@ -39,7 +39,7 @@ func generate(text, bannerName string) (string, error) {
 	// validate, load, parse, render — return the art or an error
 	var bannerFilePath string
 
-	if bannerName == "" || text == "" {
+	if text == "" {
 		return "", ErrEmptyText
 	}
 
@@ -79,7 +79,7 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidBanner):
-			http.Error(w, "Invalid banner name", http.StatusNotFound)
+			http.Error(w, "Invalid banner name", http.StatusBadRequest)
 			return
 		case errors.Is(err, ErrBannerLoad):
 			http.Error(w, "Banner Not Found", http.StatusNotFound)
@@ -87,6 +87,9 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrEmptyText):
 			tmpl.Execute(w, PageData{Error: "Empty input - please type something."})
 			return
+		default:
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+    		return
 		}
 	}
 	tmpl.Execute(w, PageData{Result: art, Text: text, Banner: bannerName})
@@ -105,7 +108,7 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, ErrInvalidBanner):
-			http.Error(w, "Invalid banner name", http.StatusNotFound)
+			http.Error(w, "Invalid banner name", http.StatusBadRequest)
 			return
 		case errors.Is(err, ErrBannerLoad):
 			http.Error(w, "Banner Not Found", http.StatusNotFound)
@@ -113,6 +116,9 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, ErrEmptyText):
 			http.Error(w, "Empty text", http.StatusBadRequest)
 			return
+		default:
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+    		return
 		}
 	}
 
