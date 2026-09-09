@@ -114,7 +114,7 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Banner Not Found", http.StatusNotFound)
 			return
 		case errors.Is(err, ErrEmptyText):
-			http.Error(w, "Empty text", http.StatusBadRequest)
+			http.Error(w, "Missing text or banner name parameter", http.StatusBadRequest)
 			return
 		default:
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
