@@ -104,5 +104,5 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Length", strconv.Itoa(len(Output)))
 	w.Header().Set("Content-Disposition", "attachment; filename=ascii-art.txt")
 
-	fmt.Fprintln(w, Output)
+	fmt.Fprint(w, Output)
 }
