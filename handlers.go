@@ -1,14 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-	"strconv"
-	"net/http"
-	"html/template"
 	"ascii-art-web/banner"
 	"ascii-art-web/parser"
 	"ascii-art-web/render"
+	"errors"
+	"fmt"
+	"html/template"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 type PageData struct {
@@ -17,6 +18,12 @@ type PageData struct {
 	Result string
 	Error string
 }
+
+var (
+	ErrInvalidBanner = errors.New("Invalid banner name")
+	ErrBannerLoad = errors.New("Could not load banner")
+	ErrEmptyText = errors.New("empty text")
+)
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -28,6 +35,35 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, PageData{Result: ""})
 }
 
+func generate(text, bannerName string) (string, error) {
+	// validate, load, parse, render — return the art or an error
+	var bannerFilePath string
+
+	if bannerName == "" || text == "" {
+		return "", ErrEmptyText
+	}
+
+	switch bannerName {
+	case "standard", "shadow", "thinkertoy":
+		bannerFilePath = "banners/" + bannerName + ".txt"
+	default:
+		return "", ErrInvalidBanner
+	}
+
+	LoadedBanner, err := banner.LoadBanner(bannerFilePath)
+	if err != nil {
+		return "", ErrBannerLoad
+	}
+
+	ParsedInput, err := parser.ParseInput(text)
+	if err != nil {
+		return "", ErrEmptyText
+	}
+
+	Output := render.RenderToString(LoadedBanner, ParsedInput)
+	return Output, nil
+}
+
 func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
 
@@ -37,33 +73,23 @@ func asciiArtHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	text := r.FormValue("text")
-	bannerName := r.FormValue("banner")
+	bannerName := strings.ToLower(r.FormValue("banner"))
 
-	var bannerFilePath string
-	bannerName = strings.ToLower(bannerName)
-
-	switch bannerName {
-	case "standard", "shadow", "thinkertoy":
-		bannerFilePath = "banners/" + bannerName + ".txt"
-	default:
-		http.Error(w, "Invalid banner name", http.StatusBadRequest)
-		return
-	}
-
-	LoadedBanner, err := banner.LoadBanner(bannerFilePath)
+	art, err := generate(text, bannerName)
 	if err != nil {
-		http.Error(w, "Banner Not Found", http.StatusNotFound)
-		return
+		switch {
+		case errors.Is(err, ErrInvalidBanner):
+			http.Error(w, "Invalid banner name", http.StatusNotFound)
+			return
+		case errors.Is(err, ErrBannerLoad):
+			http.Error(w, "Banner Not Found", http.StatusNotFound)
+			return
+		case errors.Is(err, ErrEmptyText):
+			tmpl.Execute(w, PageData{Error: "Empty input - please type something."})
+			return
+		}
 	}
-
-	ParsedInput, err := parser.ParseInput(text)
-	if err != nil {
-		tmpl.Execute(w, PageData{Error: "Empty input - please type something."})
-		return
-	}
-
-	RenderedOutput := render.RenderToString(LoadedBanner, ParsedInput)
-	tmpl.Execute(w, PageData{Result: RenderedOutput, Text: text, Banner: bannerName})
+	tmpl.Execute(w, PageData{Result: art, Text: text, Banner: bannerName})
 }
 
 func exportHandler(w http.ResponseWriter, r *http.Request) {
@@ -73,41 +99,26 @@ func exportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	text := r.URL.Query().Get("text")
-	bannerName := r.URL.Query().Get("banner")
+	bannerName := strings.ToLower(r.URL.Query().Get("banner"))
 
-	var bannerFilePath string
-	bannerName = strings.ToLower(bannerName)
-
-	if bannerName == "" || text == "" {
-		http.Error(w, "Missing text or banner parameter", http.StatusBadRequest)
-		return
-	}
-
-	switch bannerName {
-	case "standard", "shadow", "thinkertoy":
-		bannerFilePath = "banners/" + bannerName + ".txt"
-	default:
-		http.Error(w, "Invalid banner name", http.StatusBadRequest)
-		return
-	}
-
-	LoadedBanner, err := banner.LoadBanner(bannerFilePath)
+	art, err := generate(text, bannerName)
 	if err != nil {
-		http.Error(w, "Banner Not Found", http.StatusNotFound)
-		return
+		switch {
+		case errors.Is(err, ErrInvalidBanner):
+			http.Error(w, "Invalid banner name", http.StatusNotFound)
+			return
+		case errors.Is(err, ErrBannerLoad):
+			http.Error(w, "Banner Not Found", http.StatusNotFound)
+			return
+		case errors.Is(err, ErrEmptyText):
+			http.Error(w, "Empty text", http.StatusBadRequest)
+			return
+		}
 	}
-
-	ParsedInput, err := parser.ParseInput(text)
-	if err != nil {
-		http.Error(w, "Empty text", http.StatusBadRequest)
-		return
-	}
-
-	Output := render.RenderToString(LoadedBanner, ParsedInput)
 
 	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Content-Length", strconv.Itoa(len(Output)))
+	w.Header().Set("Content-Length", strconv.Itoa(len(art)))
 	w.Header().Set("Content-Disposition", "attachment; filename=ascii-art.txt")
 
-	fmt.Fprint(w, Output)
+	fmt.Fprint(w, art)
 }
