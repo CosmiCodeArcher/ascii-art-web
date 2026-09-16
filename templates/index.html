@@ -1,10 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
 
 <body>
-    <form action="/ascii-art" method="POST">
-        <input name="text" type="text">
-        <select name="banner">
+    <form action="/ascii-art" method="POST" class="form">
+        <input name="text" type="text" class="input">
+        <select name="banner" class="select">
             <option value="standard">standard</option>
             <option value="shadow">shadow</option>
             <option value="thinkertoy">thinkertoy</option>
@@ -12,11 +18,11 @@
         <button type="submit">Generate</button>
     </form>
     {{if .Error}}
-    <p style="color:red">{{.Error}}</p>
+    <p class="error">{{.Error}}</p>
     {{end}}
-    <pre>{{.Result}}</pre>
+    <pre class="output">{{.Result}}</pre>
     {{if .Result}}
-    <a href="/export?text={{.Text}}&banner={{.Banner}}">Download</a>
+    <a href="/export?text={{.Text}}&banner={{.Banner}}" class="download-link">Download</a>
     {{end}}
 </body>
 
