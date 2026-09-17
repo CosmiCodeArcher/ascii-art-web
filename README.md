@@ -26,6 +26,7 @@ Go to that link `http://localhost:8081` in your browser and type in your desired
 | `GET` | `/` | none | Serves the form page where the text and banner are chosen. |
 | `POST` | `/ascii-art` | form fields `text`, `banner` | Renders the ascii-art from the submitted form data and writes it back into the results page. |
 | `GET` | `/export` | query parameters `text`, `banner` | Regenerates the same ascii-art and sends it back as a downloadable `.txt` file. |
+| `GET` | `/static/` | none | Serves files from the `static` directory (currently the stylesheet). Registered with `http.Handle` using `http.FileServer` wrapped in `http.StripPrefix`, so `/static/style.css` maps to `static/style.css` on disk. |
 
 `text` is the text to render and `banner` is the banner's name: `standard`, `shadow` or `thinkertoy`.
 
@@ -62,6 +63,16 @@ The `/export` route reuses that exact same generation step; it only reads the te
 
 The string is passed into the parsed HTML `.Result` placeholder through a struct then sent back to the browser using the response writer.
 
+### Styling
+
+The CSS lives in `static/style.css` and is linked from the `<head>` of `templates/index.html`. The browser fetches it through the `/static/` route above.
+
+- The colour palette (`--bg`, `--text`, `--accent-color`, `--border-color`, `--error`) is defined once as CSS custom properties in `:root` and referenced with `var()` throughout, so each palette colour is declared in a single place.
+- The submit button has `:hover`, `:active` and `:focus-visible` states. The text input and the banner select change their border colour on `:focus-visible`, and the download link has `:hover` and `:focus-visible` states. `:focus-visible` is used rather than `:focus` so the keyboard focus ring appears during tab navigation but not on mouse clicks.
+- The `<pre>` output element uses `overflow-x: auto` so wide ascii-art scrolls inside its own box instead of forcing the whole document sideways. Wrapping is deliberately not used, because a wrapped row would break the alignment of the art.
+- The layout is a single column of inline form controls inside a `max-width: 1200px` body, which reflows naturally at narrow widths without media queries.
+- The page requests `JetBrains Mono` and falls back to the generic `monospace` family, so the art stays correctly aligned on any machine but the typeface differs where JetBrains Mono is not installed.
+
 ### Export
 
 No file is ever written to the server's disk. The generated string is streamed straight to the client
@@ -77,5 +88,6 @@ The browser then creates the file itself from the filename in `Content-Dispositi
 
 ## Behaviour notes
 
+- `homeHandler` returns `404 Not Found` for any path other than `/`, because the `"/"` pattern in Go's default `ServeMux` is a prefix match rather than an exact one and would otherwise serve the home page for every unmatched URL.
 - `/export` is an endpoint, not a page. Visiting it without the query parameters returns `400 Bad Request` rather than a form, because there is nothing to render.
 - The banner's name is checked against a fixed whitelist (`standard`, `shadow`, `thinkertoy`) on both `/ascii-art` and `/export`. The name is only turned into a `banners/<name>.txt` path after it matches one of those three, so a crafted banner name cannot be used to walk the file system through the banner file path.

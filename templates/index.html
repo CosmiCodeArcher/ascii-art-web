@@ -20,8 +20,8 @@
     {{if .Error}}
     <p class="error">{{.Error}}</p>
     {{end}}
-    <pre class="output">{{.Result}}</pre>
     {{if .Result}}
+    <pre class="output">{{.Result}}</pre>
     <a href="/export?text={{.Text}}&banner={{.Banner}}" class="download-link">Download</a>
     {{end}}
 </body>
