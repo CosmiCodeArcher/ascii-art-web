@@ -68,7 +68,7 @@ The string is passed into the parsed HTML `.Result` placeholder through a struct
 The CSS lives in `static/style.css` and is linked from the `<head>` of `templates/index.html`. The browser fetches it through the `/static/` route above.
 
 - The colour palette (`--bg`, `--text`, `--accent-color`, `--border-color`, `--error`) is defined once as CSS custom properties in `:root` and referenced with `var()` throughout, so each palette colour is declared in a single place.
-- The submit button has `:hover`, `:active` and `:focus-visible` states. The text input and the banner select change their border colour on `:focus-visible`, and the download link has `:hover` and `:focus-visible` states. `:focus-visible` is used rather than `:focus` so the keyboard focus ring appears during tab navigation but not on mouse clicks.
+- Every interactive control (the text input, the banner select, the submit button and the download link) has `:hover`, `:active` and `:focus-visible` states. `:focus-visible` is used rather than `:focus` so the keyboard focus ring appears during tab navigation but not on mouse clicks.
 - The `<pre>` output element uses `overflow-x: auto` so wide ascii-art scrolls inside its own box instead of forcing the whole document sideways. Wrapping is deliberately not used, because a wrapped row would break the alignment of the art.
 - The layout is a single column of inline form controls inside a `max-width: 1200px` body, which reflows naturally at narrow widths without media queries.
 - The page requests `JetBrains Mono` and falls back to the generic `monospace` family, so the art stays correctly aligned on any machine but the typeface differs where JetBrains Mono is not installed.

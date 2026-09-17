@@ -20,6 +20,14 @@ body {
   border: 1px solid var(--border-color);
 }
 
+.input:hover {
+  border: 1px solid var(--text);
+}
+
+.input:active {
+  border: 1px solid var(--accent-color);
+}
+
 .input:focus-visible {
   border: 1px solid var(--accent-color);
 }
@@ -27,6 +35,14 @@ body {
 .select {
   padding: 12px 16px;
   border: 1px solid var(--border-color);
+}
+
+.select:hover {
+  border: 1px solid var(--text);
+}
+
+.select:active {
+  border: 1px solid var(--accent-color);
 }
 
 .select:focus-visible {
@@ -68,6 +84,10 @@ button:focus-visible {
 
 .download-link:hover {
   text-decoration-thickness: 3px;
+}
+
+.download-link:active {
+  filter: brightness(0.8);
 }
 
 .download-link:focus-visible {
