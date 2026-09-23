@@ -14,7 +14,7 @@ FROM alpine:3.20
 
 WORKDIR /app
 
-COPY --from=builder /app/aaw_app
+COPY --from=builder /app/aaw_app .
 
 COPY templates/ ./templates/
 COPY static/ ./static/
