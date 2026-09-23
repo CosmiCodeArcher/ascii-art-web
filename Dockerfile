@@ -12,13 +12,22 @@ RUN CGO_ENABLED=0 go build -o aaw_app
 
 FROM alpine:3.20
 
+LABEL org.opencontainers.image.title="ascii-art-web" \
+      org.opencontainers.image.description="Display rendered ascii-art project to a web browser instead of a terminal." \
+      org.opencontainers.image.authors="https://github.com/cosmicodearcher" \
+      org.opencontainers.image.source="https://github.com/cosmicodearcher/ascii-art-web"
+
 WORKDIR /app
+
+RUN adduser -D not_archer
 
 COPY --from=builder /app/aaw_app .
 
 COPY templates/ ./templates/
 COPY static/ ./static/
 COPY banners/ ./banners/
+
+USER not_archer
 
 EXPOSE 8081
 
