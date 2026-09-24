@@ -14,7 +14,7 @@ FROM alpine:3.20
 
 LABEL org.opencontainers.image.title="ascii-art-web" \
       org.opencontainers.image.description="Display rendered ascii-art project to a web browser instead of a terminal." \
-      org.opencontainers.image.authors="https://github.com/cosmicodearcher" \
+      org.opencontainers.image.authors="Hamza Ochiponu Musa" \
       org.opencontainers.image.source="https://github.com/cosmicodearcher/ascii-art-web"
 
 WORKDIR /app
