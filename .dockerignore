@@ -1,3 +1,6 @@
 .git
+.gitignore
 README.md
 Dockerfile
+ascii-art-web
+aaw_app
